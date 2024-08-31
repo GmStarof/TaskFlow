@@ -1,0 +1,100 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">
+                    {{ '::Menu:Tarefa' | abpLocalization }}
+                </h5>
+            </div>
+            <div class="text-end col col-md-6">
+                <div class="text-lg-end pt-2">
+                    <button id="create" class="btn btn-primary" type="button" (click)="createTarefa()">
+                        <i class="fa fa-plus me-1"></i>
+                        <span>{{ "::NovaTarefa" | abpLocalization }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <ngx-datatable [rows]="tarefa.items" [count]="tarefa.totalCount" [list]="list" default>
+            <ngx-datatable-column [name]="'::Titulo' | abpLocalization" prop="titulo"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Descricao' | abpLocalization" prop="descricao"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    {{ '::Enum:TarefasStatus.' + row.status | abpLocalization }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::DataCriacao' | abpLocalization" prop="dataCriacao">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    {{ row.dataCriacao | date }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Acoes' | abpLocalization" [maxWidth]="150" [sortable]="false">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <div ngbDropdown container="body" class="d-inline-block">
+                        <button class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" ngbDropdownToggle>
+                            <i class="fa fa-cog me-1"></i>{{ '::Acoes' | abpLocalization }}
+                        </button>
+                        <div ngbDropdownMenu>
+                            <button ngbDropdownItem (click)="editarTarefa(row.id)">
+                                {{ '::Editar' | abpLocalization }}
+                            </button>
+                            <button ngbDropdownItem (click)="deletar(row.id)">
+                                {{ '::Deletar' | abpLocalization }}
+                            </button>
+                        </div>
+                    </div>
+                </ng-template>
+            </ngx-datatable-column>
+        </ngx-datatable>
+    </div>
+</div>
+
+<abp-modal [(visible)]="isModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{(selecionarTarefa.id ? '::Editar' : '::NovaTarefa') | abpLocalization }}</h3>
+    </ng-template>
+
+    <ng-template #abpBody>
+        <form [formGroup]="form" (ngSubmit)="salvar()">
+            <div class="mt-2">
+                <label for="tarefa-name">Titulo</label><span> * </span>
+                <input type="text" id="tarefa-titulo" class="form-control" formControlName="titulo" autofocus />
+            </div>
+
+            <div class="mt-2">
+                <label for="tarefa-descricao">Descrição</label><span> * </span>
+                <input type="text" id="tarefa-descricao" class="form-control" formControlName="descricao" />
+            </div>
+
+            <div class="mt-2">
+                <label for="tarefa-status">Status</label><span> * </span>
+                <select class="form-control" id="tarefa-status" formControlName="status">
+                    <option [ngValue]="null">Selecione o status da tarefa</option>
+                    <option [ngValue]="0">Pendente</option>
+                    <option [ngValue]="1">Concluída</option>
+                </select>
+            </div>
+
+            <div class="mt-2">
+                <label>Data de Criação</label><span> * </span>
+                <input #datepicker="ngbDatepicker" class="form-control" name="datepicker" formControlName="dataCriacao"
+                    ngbDatepicker (click)="datepicker.toggle()" />
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>
+            {{ '::Fechar' | abpLocalization }}
+        </button>
+
+        <!--added save button-->
+        <button class="btn btn-primary" (click)="salvar()" [disabled]="form.invalid">
+            <i class="fa fa-check mr-1"></i>
+            {{ '::Salvar' | abpLocalization }}
+        </button>
+    </ng-template>
+</abp-modal>

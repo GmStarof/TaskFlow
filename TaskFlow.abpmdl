@@ -1,0 +1,85 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.Account": {
+      "version": "8.2.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "8.2.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.Identity": {
+      "version": "8.2.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "8.2.2",
+      "isInstalled": true
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "TaskFlow.Application": {
+      "path": "src/TaskFlow.Application/TaskFlow.Application.abppkg",
+      "folder": "src"
+    },
+    "TaskFlow.Application.Tests": {
+      "path": "test/TaskFlow.Application.Tests/TaskFlow.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "TaskFlow.Domain.Shared": {
+      "path": "src/TaskFlow.Domain.Shared/TaskFlow.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "TaskFlow.Application.Contracts": {
+      "path": "src/TaskFlow.Application.Contracts/TaskFlow.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "TaskFlow.HttpApi": {
+      "path": "src/TaskFlow.HttpApi/TaskFlow.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "TaskFlow.HttpApi.Client": {
+      "path": "src/TaskFlow.HttpApi.Client/TaskFlow.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "TaskFlow.EntityFrameworkCore.Tests": {
+      "path": "test/TaskFlow.EntityFrameworkCore.Tests/TaskFlow.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "TaskFlow.EntityFrameworkCore": {
+      "path": "src/TaskFlow.EntityFrameworkCore/TaskFlow.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "TaskFlow.TestBase": {
+      "path": "test/TaskFlow.TestBase/TaskFlow.TestBase.abppkg",
+      "folder": "test"
+    },
+    "TaskFlow.Domain.Tests": {
+      "path": "test/TaskFlow.Domain.Tests/TaskFlow.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "TaskFlow.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/TaskFlow.HttpApi.Client.ConsoleTestApp/TaskFlow.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "TaskFlow.DbMigrator": {
+      "path": "src/TaskFlow.DbMigrator/TaskFlow.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "TaskFlow.HttpApi.Host": {
+      "path": "src/TaskFlow.HttpApi.Host/TaskFlow.HttpApi.Host.abppkg",
+      "folder": "src"
+    },
+    "TaskFlow.Domain": {
+      "path": "src/TaskFlow.Domain/TaskFlow.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}

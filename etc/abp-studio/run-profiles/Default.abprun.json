@@ -1,0 +1,17 @@
+﻿{
+  "applications": {
+    "TaskFlow.HttpApi.Host": {
+      "type": "dotnet-project",
+      "launchUrl": "https://localhost:44342",
+      "path": "../../../src/TaskFlow.HttpApi.Host/TaskFlow.HttpApi.Host.csproj",
+      "kubernetesService": ".*-httpapihost$"  
+    },
+    "TaskFlow.Angular": {
+      "type": "cli",
+      "workingDirectory": "../../../angular",
+      "startCommand": "./start.ps1",
+      "launchUrl": "http://localhost:4200",
+      "kubernetesService": ".*-angular$"        
+    }
+  }
+}

@@ -1,0 +1,30 @@
+
+services:
+  backend:
+    build:
+      context: ./backend # caminho para o Dockerfile do backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80" # Mapeando a porta 80 do contêiner para a 5000 local
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend # caminho para o Dockerfile do frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80" # Mapeando a porta 80 do contêiner para a 4200 local
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      SA_PASSWORD: "SuaSenhaForte123"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./data:/var/opt/mssql/data # Persistindo dados em um volume
+
+volumes:
+  data:
