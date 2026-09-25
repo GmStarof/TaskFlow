@@ -5,7 +5,6 @@ export interface CreateUpdateTarefaDto {
   titulo?: string;
   descricao?: string;
   status: TarefasStatus;
-  dataCriacao?: string;
 }
 
 export interface TarefaDto extends AuditedEntityDto<string> {

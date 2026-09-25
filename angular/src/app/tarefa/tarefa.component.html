@@ -60,13 +60,13 @@
     <ng-template #abpBody>
         <form [formGroup]="form" (ngSubmit)="salvar()">
             <div class="mt-2">
-                <label for="tarefa-name">Titulo</label><span> * </span>
-                <input type="text" id="tarefa-titulo" class="form-control" formControlName="titulo" autofocus />
+                <label for="tarefa-titulo">Título</label><span> * </span>
+                <input type="text" id="tarefa-titulo" class="form-control" formControlName="titulo" maxlength="200" autofocus />
             </div>
 
             <div class="mt-2">
                 <label for="tarefa-descricao">Descrição</label><span> * </span>
-                <input type="text" id="tarefa-descricao" class="form-control" formControlName="descricao" />
+                <textarea id="tarefa-descricao" class="form-control" formControlName="descricao" maxlength="4000" rows="3"></textarea>
             </div>
 
             <div class="mt-2">
@@ -78,21 +78,16 @@
                 </select>
             </div>
 
-            <div class="mt-2">
-                <label>Data de Criação</label><span> * </span>
-                <input #datepicker="ngbDatepicker" class="form-control" name="datepicker" formControlName="dataCriacao"
-                    ngbDatepicker (click)="datepicker.toggle()" />
-            </div>
         </form>
     </ng-template>
 
     <ng-template #abpFooter>
-        <button type="button" class="btn btn-secondary" abpClose>
+        <button type="button" class="btn btn-secondary" abpClose [disabled]="isSaving">
             {{ '::Fechar' | abpLocalization }}
         </button>
 
         <!--added save button-->
-        <button class="btn btn-primary" (click)="salvar()" [disabled]="form.invalid">
+        <button class="btn btn-primary" (click)="salvar()" [disabled]="form.invalid || isSaving" [attr.aria-busy]="isSaving">
             <i class="fa fa-check mr-1"></i>
             {{ '::Salvar' | abpLocalization }}
         </button>

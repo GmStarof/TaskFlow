@@ -79,7 +79,10 @@ public class TaskFlowHttpApiHostModule : AbpModule
 
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", "Mct32XfeUqmq8V4q");
+                var certificatePath = configuration["AuthServer:CertificatePath"] ?? "openiddict.pfx";
+                var certificatePassword = configuration["AuthServer:CertificatePassword"]
+                    ?? throw new InvalidOperationException("Configure AuthServer:CertificatePassword outside development.");
+                serverBuilder.AddProductionEncryptionAndSigningCertificate(certificatePath, certificatePassword);
                 serverBuilder.SetIssuer(new Uri(configuration["AuthServer:Authority"]!));
             });
         }
@@ -90,7 +93,7 @@ public class TaskFlowHttpApiHostModule : AbpModule
         var configuration = context.Services.GetConfiguration();
         var hostingEnvironment = context.Services.GetHostingEnvironment();
 
-        if (!configuration.GetValue<bool>("App:DisablePII"))
+        if (hostingEnvironment.IsDevelopment() && !configuration.GetValue<bool>("App:DisablePII", true))
         {
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
@@ -151,7 +154,9 @@ public class TaskFlowHttpApiHostModule : AbpModule
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
 
-        if (hostingEnvironment.IsDevelopment())
+        // Published development containers use embedded resources, not source folders.
+        if (hostingEnvironment.IsDevelopment() &&
+            Directory.Exists(Path.Combine(hostingEnvironment.ContentRootPath, "..", "TaskFlow.Domain.Shared")))
         {
             Configure<AbpVirtualFileSystemOptions>(options =>
             {

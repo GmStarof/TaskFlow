@@ -87,9 +87,10 @@ public class TaskFlowDbContext :
 
         builder.Entity<Tarefa>(b =>
         {
-            b.ToTable( "Books");
+            b.ToTable("Tarefas");
             b.ConfigureByConvention(); //auto configure for the base class props
             b.Property(x => x.Titulo).IsRequired();
+            b.HasIndex(x => new { x.TenantId, x.CreatorId });
         });
     }
 }

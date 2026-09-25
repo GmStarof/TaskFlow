@@ -1,30 +1,65 @@
-
+# Ambiente local de desenvolvimento. Não publicar estas portas na rede.
+# Os Dockerfiles .NET usam os artefatos produzidos por dotnet publish (ver README).
 services:
-  backend:
-    build:
-      context: ./backend # caminho para o Dockerfile do backend
-      dockerfile: Dockerfile
-    ports:
-      - "5000:80" # Mapeando a porta 80 do contêiner para a 5000 local
-    depends_on:
-      - db
-
-  frontend:
-    build:
-      context: ./frontend # caminho para o Dockerfile do frontend
-      dockerfile: Dockerfile
-    ports:
-      - "4200:80" # Mapeando a porta 80 do contêiner para a 4200 local
-
   db:
     image: mcr.microsoft.com/mssql/server:2019-latest
     environment:
-      SA_PASSWORD: "SuaSenhaForte123"
+      MSSQL_SA_PASSWORD: ${TASKFLOW_DB_PASSWORD:?Defina TASKFLOW_DB_PASSWORD no arquivo .env}
       ACCEPT_EULA: "Y"
     ports:
-      - "1433:1433"
+      - "127.0.0.1:1433:1433"
     volumes:
-      - ./data:/var/opt/mssql/data # Persistindo dados em um volume
+      - data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'SQLCMD=/opt/mssql-tools18/bin/sqlcmd; [ -x "$$SQLCMD" ] || SQLCMD=/opt/mssql-tools/bin/sqlcmd; "$$SQLCMD" -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" -b -o /dev/null'
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  migrator:
+    profiles: [app]
+    build:
+      context: ./src/TaskFlow.DbMigrator
+    environment:
+      ConnectionStrings__Default: "Server=db;Database=TaskFlow;User Id=sa;Password=${TASKFLOW_DB_PASSWORD};TrustServerCertificate=True"
+      OpenIddict__Applications__TaskFlow_App__RootUrl: http://localhost:4200
+      OpenIddict__Applications__TaskFlow_Swagger__RootUrl: http://localhost:5000
+    depends_on:
+      db:
+        condition: service_healthy
+
+  backend:
+    profiles: [app]
+    build:
+      context: ./src/TaskFlow.HttpApi.Host
+    ports:
+      - "127.0.0.1:5000:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      App__SelfUrl: http://localhost:5000
+      App__AngularUrl: http://localhost:4200
+      App__CorsOrigins: http://localhost:4200
+      App__RedirectAllowedUrls: http://localhost:4200
+      AuthServer__Authority: http://localhost:5000
+      AuthServer__RequireHttpsMetadata: "false"
+      ConnectionStrings__Default: "Server=db;Database=TaskFlow;User Id=sa;Password=${TASKFLOW_DB_PASSWORD};TrustServerCertificate=True"
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+
+  frontend:
+    profiles: [app]
+    build:
+      context: ./angular
+    ports:
+      - "127.0.0.1:4200:80"
+    volumes:
+      - ./angular/dynamic-env.docker.json:/usr/share/nginx/html/dynamic-env.json:ro
+    depends_on:
+      - backend
 
 volumes:
   data:

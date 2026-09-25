@@ -3,10 +3,10 @@ FROM node:18-alpine as build
 WORKDIR /app
 COPY package*.json /app/
 
-RUN yarn
+RUN npm ci
 COPY . /app
 
-RUN yarn build:prod
+RUN npm run build:prod
 
 FROM nginx:alpine
 COPY dynamic-env.json /usr/share/nginx/html

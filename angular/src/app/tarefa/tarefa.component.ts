@@ -1,22 +1,22 @@
 import { ListService, PagedResultDto } from '@abp/ng.core';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TarefaService } from '@proxy/service/tarefas-service';
 import { TarefasStatus } from '@proxy/tarefa-status';
 import { TarefaDto } from '@proxy/tarefas-dto';
-import { NgbDateNativeAdapter, NgbDateAdapter } from '@ng-bootstrap/ng-bootstrap';
 import { Confirmation, ConfirmationService } from '@abp/ng.theme.shared';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-tarefa',
   templateUrl: './tarefa.component.html',
   styleUrl: './tarefa.component.scss',
-  providers: [ListService,
-    { provide: NgbDateAdapter, useClass: NgbDateNativeAdapter }],
+  providers: [ListService],
 })
-export class TarefaComponent {
+export class TarefaComponent implements OnInit {
   tarefa = { items: [], totalCount: 0 } as PagedResultDto<TarefaDto>;
   isModalOpen = false;
+  isSaving = false;
 
   selecionarTarefa = {} as TarefaDto;
 
@@ -35,22 +35,23 @@ export class TarefaComponent {
   }
 
   createTarefa() {
+    this.selecionarTarefa = {} as TarefaDto;
     this.buildForm();
     this.isModalOpen = true;
   }
 
   buildForm() {
     this.form = this.fb.group({
-      titulo: [this.selecionarTarefa.titulo || '', Validators.required],
-      status: [this.selecionarTarefa.status || null, Validators.required],
-      descricao: [this.selecionarTarefa.descricao || null, Validators.required],
-      dataCriacao: [this.selecionarTarefa.dataCriacao || null, Validators.required],
+      titulo: [this.selecionarTarefa.titulo ?? '', [Validators.required, Validators.maxLength(200), Validators.pattern(/\S/)]],
+      status: [this.selecionarTarefa.status ?? TarefasStatus.Pendente, Validators.required],
+      descricao: [this.selecionarTarefa.descricao ?? '', [Validators.required, Validators.maxLength(4000), Validators.pattern(/\S/)]],
     });
   }
 
 
   salvar() {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.isSaving) {
+      this.form.markAllAsTouched();
       return;
     }
 
@@ -58,9 +59,11 @@ export class TarefaComponent {
       ? this.tarefaService.update(this.selecionarTarefa.id, this.form.value)
       : this.tarefaService.create(this.form.value);
 
-    request.subscribe(() => {
+    this.isSaving = true;
+    request.pipe(finalize(() => this.isSaving = false)).subscribe(() => {
       this.isModalOpen = false;
       this.form.reset();
+      this.selecionarTarefa = {} as TarefaDto;
       this.list.get();
     });
   }
