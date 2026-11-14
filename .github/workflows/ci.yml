@@ -55,7 +55,7 @@ jobs:
 
   delivery:
     needs: [backend, frontend]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       TASKFLOW_DB_PASSWORD: TaskFlow-CI-Database-Only-123!
     steps:
