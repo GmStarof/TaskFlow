@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System;
 using System.Threading.Tasks;
 using TaskFlow.TarefasDto;
-using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
-namespace TaskFlow.IService
+namespace TaskFlow.IService;
+
+/// <summary>Gerencia as tarefas pessoais do usuário e da organização atuais.</summary>
+public interface ITarefaService :
+    ICrudAppService<TarefaDto, Guid, TarefaConsultaDto, CreateUpdateTarefaDto>
 {
-    public interface ITarefaService:
-    ICrudAppService< //Define os metodos cruds já criados do ABP
-        TarefaDto, //Use para mostrar o livro
-        Guid, //Chave primaria da tarefa
-        PagedAndSortedResultRequestDto, //Use para paginação e shorts da pagina
-        CreateUpdateTarefaDto> //Use para criar e atualizar as tarefas 
-    {
-    }
+    /// <summary>Conta tarefas pessoais usando o dia informado para classificar prazos.</summary>
+    Task<TarefaResumoDto> GetResumoAsync(DateOnly? dataReferencia);
+
+    /// <summary>Define o status da tarefa, preservando seus demais campos.</summary>
+    Task<TarefaDto> UpdateStatusAsync(Guid id, AtualizarTarefaStatusDto input);
 }

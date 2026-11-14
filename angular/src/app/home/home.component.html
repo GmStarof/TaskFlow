@@ -1,16 +1,24 @@
-<abp-page [title]="'::Menu:Home' | abpLocalization">
-  <div class="card">
-    <div class="card-header">{{ '::Welcome' | abpLocalization }}</div>
-    <div class="card-body">
-      <p>
-        {{ '::LongWelcomeMessage' | abpLocalization }}
-      </p>
-      <p *ngIf="!hasLoggedIn">
-        <a (click)="login()" class="btn btn-primary" role="button"
-          ><i class="fa fa-sign-in me-1" aria-hidden="true"></i>{{ 'AbpAccount::Login' | abpLocalization }}</a
-        >
-      </p>
-      <hr />
-    </div>
+<app-workspace>
+  <header class="tf-heading">
+    <div><h1>Visão geral</h1><p>Acompanhe suas tarefas e veja quais precisam de atenção.</p></div>
+    <a *ngIf="auth.isAuthenticated" class="btn tf-primary" routerLink="/MinhasTarefas">Ver minhas tarefas</a>
+  </header>
+
+  <section *ngIf="!auth.isAuthenticated" class="tf-panel tf-welcome">
+    <h2>Organize suas tarefas em um só lugar</h2>
+    <p>Defina prioridades, acompanhe prazos e conclua tarefas conforme avança.</p>
+    <button class="btn tf-primary" type="button" (click)="auth.navigateToLogin()">Entrar</button>
+  </section>
+  <p *ngIf="carregando" role="status">Carregando resumo…</p>
+  <section *ngIf="erro" class="tf-panel" role="alert">
+    <p>Não foi possível carregar seu resumo.</p>
+    <button class="btn btn-outline-secondary" type="button" (click)="carregar()">Tentar novamente</button>
+  </section>
+  <div class="tf-summary" *ngIf="resumo && !erro">
+    <a *ngFor="let item of indicadores" routerLink="/MinhasTarefas" [queryParams]="{ filtro: item.filtro }">
+      <i class="fas" [ngClass]="item.icon" aria-hidden="true"></i>
+      <span>{{ item.label }}</span>
+      <strong>{{ resumo[item.campo] }}</strong>
+    </a>
   </div>
-</abp-page>
+</app-workspace>

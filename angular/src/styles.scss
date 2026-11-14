@@ -1,4 +1,19 @@
-/* You can add global styles to this file, and also import other style files */
+.tf-workspace {
+  font-family: Inter, system-ui, sans-serif;
+}
+.tf-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: .85rem;
+  margin-bottom: 1.4rem;
+}
+.tf-heading h1 { font-size: clamp(1.65rem, 3vw, 2.25rem); font-weight: 750; margin: 0 0 .35rem; }
+.tf-heading p { margin: 0; color: #51696e; }
+.tf-panel { padding: clamp(.85rem, 2vw, 1.4rem); background: #fff; border: 1px solid #dbe5e7; border-radius: .85rem; }
+.btn.tf-primary { color: #fff; background: #24654f; border-color: #24654f; font-weight: 650; }
+.btn.tf-primary:hover { color: #fff; background: #194f3d; border-color: #194f3d; }
 
 :root .lpx-theme-dark {
   --lpx-logo: url('/assets/images/logo/logo-light.svg');

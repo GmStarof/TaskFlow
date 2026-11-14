@@ -7,6 +7,8 @@ Aplicação web de tarefas pessoais com Angular 17, ASP.NET Core/.NET 8, ABP 8.2
 - Criar, listar, editar e excluir tarefas pessoais.
 - Status pendente ou concluída, título e descrição.
 - Data de criação gerada pelo servidor e preservada na edição.
+- Busca, filtros, prioridades, prazos e ações rápidas de conclusão e reabertura.
+- Visão geral com contadores e links para os recortes da lista.
 - Autenticação obrigatória na API; acesso restrito ao autor e à organização atual.
 - Administração de identidade e organizações pelos módulos ABP.
 
@@ -63,6 +65,8 @@ npm start
 Interface: `http://localhost:4200`. API/Swagger: `https://localhost:44342/swagger`.
 O seed inicial usa as credenciais de desenvolvimento definidas em `TaskFlowConsts`; troque a senha inicial antes de qualquer uso compartilhado.
 
+Valide a API em `/healthz` e `/readyz`. O primeiro endpoint verifica se o processo responde. O segundo também verifica a conexão com o banco.
+
 ## Docker para desenvolvimento local
 
 O Compose usa portas vinculadas apenas a `127.0.0.1`. O perfil `app` usa HTTP e ambiente Development; não é uma configuração de produção.
@@ -118,3 +122,19 @@ npm run build:prod
 Os testes .NET usam SQLite em memória e não alteram seu SQL Server. Cobrem operações do autor, acesso de terceiros, isolamento por organização, acesso anônimo e validação de entrada. O template de testes ABP permite autorização globalmente; os casos de acesso anônimo exercitam também a proteção explícita no serviço. Uma validação HTTP/OAuth completa continua necessária antes de implantação.
 
 Os testes Angular cobrem criação após edição, status pendente, campos em branco e prevenção de envio duplicado.
+
+## Documentação técnica
+
+- [Requisitos, regras e casos de uso](docs/requisitos.md)
+- [Matriz de rastreabilidade](docs/rastreabilidade.md)
+- [Arquitetura, componentes e diagramas](docs/arquitetura.md)
+- [Modelo e dicionário de dados](docs/dados.md)
+- [API e autenticação](docs/api.md)
+- [Contrato OpenAPI de tarefas](docs/openapi.json)
+- [Estratégia de testes](docs/testes.md) e [evidências de verificação](docs/verificacao.md)
+- [Implantação, operação, recuperação e métricas](docs/operacao.md)
+- [Histórico de alterações](CHANGELOG.md)
+
+## Versionamento
+
+Registre mudanças em Unreleased no changelog. Na publicação, mova as entradas para a versão datada e marque o commit com uma tag `vMAJOR.MINOR.PATCH`. Use MAJOR para quebra de contrato, MINOR para funcionalidade compatível e PATCH para correções compatíveis. Revise migrações e o contrato OpenAPI antes de classificar a mudança.

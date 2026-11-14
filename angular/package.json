@@ -8,6 +8,7 @@
     "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:e2e": "node --test e2e/taskflow.test.mjs",
     "lint": "ng lint"
   },
   "private": true,
@@ -58,6 +59,7 @@
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.0.0",
     "ng-packagr": "~17.3.0",
+    "playwright": "1.55.1",
     "typescript": "~5.3.0"
   }
 }

@@ -18,5 +18,10 @@ namespace TaskFlow.TarefasDto
         public required string Descricao { get; set; }
         [EnumDataType(typeof(TarefasStatus))]
         public required TarefasStatus Status { get; set; } // "Pendente" ou "Concluída"
+
+        [EnumDataType(typeof(TarefaPrioridade))]
+        public TarefaPrioridade Prioridade { get; set; }
+
+        public DateOnly? Prazo { get; set; }
     }
 }

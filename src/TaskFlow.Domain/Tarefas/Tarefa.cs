@@ -17,6 +17,8 @@ namespace TaskFlow.Tarefas
         public required string Descricao { get; set; }
         public required TarefasStatus Status { get; set; } // "Pendente" ou "Concluída"
         public DateTime DataCriacao { get; set; }
+        public TarefaPrioridade Prioridade { get; set; }
+        public DateOnly? Prazo { get; set; }
 
     }
 

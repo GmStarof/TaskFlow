@@ -1,0 +1,102 @@
+name: TaskFlow CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore TaskFlow.sln
+      - run: dotnet build TaskFlow.sln -c Release --no-restore
+      - run: dotnet test test/TaskFlow.EntityFrameworkCore.Tests -c Release --no-build --collect "Code Coverage;Format=Cobertura" --results-directory TestResults --logger trx
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: TestResults/
+          if-no-files-found: ignore
+
+  frontend:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: angular
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: angular/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test -- --watch=false --browsers=ChromeHeadless --code-coverage
+      - run: npm run build:prod
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: angular-coverage
+          path: angular/coverage/
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: angular-dist
+          path: angular/dist/TaskFlow/
+          if-no-files-found: error
+
+  delivery:
+    needs: [backend, frontend]
+    runs-on: ubuntu-24.04
+    env:
+      TASKFLOW_DB_PASSWORD: TaskFlow-CI-Database-Only-123!
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Restore login assets
+        run: |
+          npm install --global yarn@1.22.22
+          dotnet tool install --global Volo.Abp.Cli --version 8.2.2
+          abp install-libs --working-directory src/TaskFlow.HttpApi.Host
+          test -d src/TaskFlow.HttpApi.Host/wwwroot/libs/abp
+      - name: Publish backend and migrator
+        run: |
+          dotnet publish src/TaskFlow.HttpApi.Host -c Release
+          dotnet publish src/TaskFlow.DbMigrator -c Release
+      - name: Start disposable Compose environment
+        run: |
+          docker compose --profile app up --build -d
+          curl --fail --retry 30 --retry-all-errors --retry-delay 2 http://localhost:5000/readyz
+      - name: Run browser scenario
+        working-directory: angular
+        env:
+          TASKFLOW_E2E_USER: admin
+          TASKFLOW_E2E_PASSWORD: 1q2w3E*
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-publish
+          path: src/*/bin/Release/net8.0/publish/
+          if-no-files-found: error
+      - name: Collect Compose logs on failure
+        if: failure()
+        run: docker compose --profile app logs --tail=150
+      - name: Stop disposable environment
+        if: always()
+        run: docker compose --profile app down --volumes
