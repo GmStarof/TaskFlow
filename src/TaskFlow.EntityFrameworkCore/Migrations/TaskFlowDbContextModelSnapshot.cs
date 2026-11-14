@@ -64,6 +64,12 @@ namespace TaskFlow.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<DateOnly?>("Prazo")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Prioridade")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 

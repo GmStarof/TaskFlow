@@ -6,7 +6,6 @@ using TaskFlow.IService;
 using TaskFlow.Tarefas;
 using TaskFlow.TarefasDto;
 using TaskFlow.TarefaStatus;
-using Volo.Abp.Application.Dtos;
 using Volo.Abp.Authorization;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
@@ -74,7 +73,7 @@ public class TarefaServiceTests : TaskFlowEntityFrameworkCoreTestBase
 
         using var login = Login(Guid.NewGuid());
         var own = await _service.CreateAsync(Input());
-        var list = await _service.GetListAsync(new PagedAndSortedResultRequestDto());
+        var list = await _service.GetListAsync(new TarefaConsultaDto());
         list.TotalCount.ShouldBe(1);
         list.Items[0].Id.ShouldBe(own.Id);
         await Should.ThrowAsync<EntityNotFoundException>(() => _service.GetAsync(created.Id));
@@ -93,7 +92,7 @@ public class TarefaServiceTests : TaskFlowEntityFrameworkCoreTestBase
         }
 
         using var host = _tenant.Change(null);
-        (await _service.GetListAsync(new PagedAndSortedResultRequestDto())).TotalCount.ShouldBe(0);
+        (await _service.GetListAsync(new TarefaConsultaDto())).TotalCount.ShouldBe(0);
         await Should.ThrowAsync<EntityNotFoundException>(() => _service.GetAsync(created.Id));
         await Should.ThrowAsync<EntityNotFoundException>(() => _service.UpdateAsync(created.Id, Input()));
         await Should.ThrowAsync<EntityNotFoundException>(() => _service.DeleteAsync(created.Id));
@@ -106,7 +105,7 @@ public class TarefaServiceTests : TaskFlowEntityFrameworkCoreTestBase
         // The test template bypasses ABP authorization; these assertions also exercise
         // the explicit authenticated-owner checks in the application service.
         await Should.ThrowAsync<AbpAuthorizationException>(() => _service.CreateAsync(Input()));
-        await Should.ThrowAsync<AbpAuthorizationException>(() => _service.GetListAsync(new PagedAndSortedResultRequestDto()));
+        await Should.ThrowAsync<AbpAuthorizationException>(() => _service.GetListAsync(new TarefaConsultaDto()));
         await Should.ThrowAsync<AbpAuthorizationException>(() => _service.GetAsync(Guid.NewGuid()));
         await Should.ThrowAsync<AbpAuthorizationException>(() => _service.UpdateAsync(Guid.NewGuid(), Input()));
         await Should.ThrowAsync<AbpAuthorizationException>(() => _service.DeleteAsync(Guid.NewGuid()));
@@ -126,6 +125,74 @@ public class TarefaServiceTests : TaskFlowEntityFrameworkCoreTestBase
             Descricao = description,
             Status = (TarefasStatus)status
         }));
+    }
+
+    [Fact]
+    public async Task Search_Filters_And_Summary_Use_The_Same_Owner_And_Date()
+    {
+        var today = new DateOnly(2026, 11, 14);
+        var input = Input();
+        input.Titulo = "Planejar revisão";
+        input.Prioridade = TarefaPrioridade.Alta;
+        input.Prazo = today.AddDays(-1);
+        using (Login(Guid.NewGuid()))
+        {
+            await _service.CreateAsync(input);
+        }
+
+        using var login = Login(Guid.NewGuid());
+        var overdue = await _service.CreateAsync(input);
+        input.Prazo = today;
+        await _service.CreateAsync(input);
+        input.Status = TarefasStatus.Concluída;
+        input.Prazo = today.AddDays(-1);
+        await _service.CreateAsync(input);
+        input.Status = TarefasStatus.Pendente;
+        input.Prazo = null;
+        await _service.CreateAsync(input);
+
+        var results = await _service.GetListAsync(new TarefaConsultaDto
+        {
+            Busca = " revisão ", Filtro = TarefaFiltro.Atrasadas,
+            Prioridade = TarefaPrioridade.Alta, DataReferencia = today
+        });
+        results.TotalCount.ShouldBe(1);
+        results.Items[0].Id.ShouldBe(overdue.Id);
+
+        var summary = await _service.GetResumoAsync(today);
+        summary.Pendentes.ShouldBe(3);
+        summary.Hoje.ShouldBe(1);
+        summary.Atrasadas.ShouldBe(1);
+        summary.Concluidas.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Quick_Status_Update_Preserves_Details_And_Requires_Ownership()
+    {
+        var owner = Guid.NewGuid();
+        TarefaDto created;
+        using (Login(owner))
+        {
+            var input = Input();
+            input.Prazo = new DateOnly(2026, 11, 14);
+            input.Prioridade = TarefaPrioridade.Alta;
+            created = await _service.CreateAsync(input);
+        }
+
+        var status = new AtualizarTarefaStatusDto { Status = TarefasStatus.Concluída };
+        using (Login(Guid.NewGuid()))
+        {
+            await Should.ThrowAsync<EntityNotFoundException>(() => _service.UpdateStatusAsync(created.Id, status));
+        }
+
+        using var login = Login(owner);
+        await _service.UpdateStatusAsync(created.Id, status);
+        var repeated = await _service.UpdateStatusAsync(created.Id, status);
+        repeated.Status.ShouldBe(TarefasStatus.Concluída);
+        repeated.Titulo.ShouldBe(created.Titulo);
+        repeated.Prazo.ShouldBe(created.Prazo);
+        repeated.Prioridade.ShouldBe(created.Prioridade);
+        repeated.DataCriacao.ShouldBe(created.DataCriacao);
     }
 
     [Fact]

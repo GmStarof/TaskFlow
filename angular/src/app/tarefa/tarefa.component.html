@@ -1,95 +1,119 @@
-<div class="card">
-    <div class="card-header">
-        <div class="row">
-            <div class="col col-md-6">
-                <h5 class="card-title">
-                    {{ '::Menu:Tarefa' | abpLocalization }}
-                </h5>
+<app-workspace>
+  <header class="tf-heading">
+    <div><h1>Minhas tarefas</h1><p>Organize o que precisa fazer e acompanhe seu progresso.</p></div>
+    <button class="btn tf-primary" type="button" (click)="createTarefa()">
+      <i class="fas fa-plus" aria-hidden="true"></i> Nova tarefa
+    </button>
+  </header>
+
+  <section class="tf-panel" aria-label="Lista de tarefas">
+    <div class="tf-controls">
+      <div class="tf-search">
+        <label for="busca-tarefa">Buscar tarefas</label>
+        <input class="form-control" id="busca-tarefa" type="search" maxlength="200"
+          placeholder="Título ou descrição" [(ngModel)]="busca" (ngModelChange)="aplicarFiltros()">
+      </div>
+      <div>
+        <label for="filtro-prioridade">Prioridade</label>
+        <select class="form-select" id="filtro-prioridade" [(ngModel)]="prioridade" (ngModelChange)="aplicarFiltros()">
+          <option [ngValue]="undefined">Todas as prioridades</option>
+          <option *ngFor="let item of opcoesPrioridade" [ngValue]="item.value">{{ item.label }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="tf-filters" role="group" aria-label="Filtrar por situação">
+      <button *ngFor="let item of opcoesFiltro" type="button" [class.active]="filtro === item.value"
+        [attr.aria-pressed]="filtro === item.value" (click)="filtro = item.value; aplicarFiltros()">{{ item.label }}</button>
+    </div>
+
+    <div class="tf-message" role="status">{{ mensagem }}</div>
+    <p class="alert alert-danger" role="alert" *ngIf="erroAcao">{{ erroAcao }}</p>
+    <div class="tf-empty" *ngIf="erroLista" role="alert">
+      <p>Não foi possível carregar as tarefas.</p>
+      <button type="button" class="btn btn-outline-secondary" (click)="list.get()">Tentar novamente</button>
+    </div>
+    <p *ngIf="list.isLoading$ | async" class="tf-empty" role="status">Carregando tarefas…</p>
+    <ng-container *ngIf="(list.isLoading$ | async) === false && !erroLista">
+      <div class="tf-empty" *ngIf="!tarefa.items.length">
+        <i class="far fa-check-circle" aria-hidden="true"></i>
+        <h2>{{ busca || filtro || prioridade !== undefined ? 'Nenhuma tarefa encontrada' : 'Sua lista está vazia' }}</h2>
+        <button *ngIf="busca || filtro || prioridade !== undefined; else criar" type="button" class="btn btn-outline-secondary"
+          (click)="limparFiltros()">Limpar filtros</button>
+        <ng-template #criar><button type="button" class="btn tf-primary" (click)="createTarefa()">Criar primeira tarefa</button></ng-template>
+      </div>
+      <ul class="tf-tasks" *ngIf="tarefa.items.length">
+        <li *ngFor="let item of tarefa.items">
+          <button type="button" class="tf-check" [class.done]="item.status === concluida"
+            [disabled]="busy.has(item.id)" [attr.aria-label]="(item.status === status.Pendente ? 'Concluir ' : 'Reabrir ') + item.titulo"
+            (click)="alternarStatus(item)"><i class="fas fa-check" aria-hidden="true"></i></button>
+          <div class="tf-task-content">
+            <h2>{{ item.titulo }}</h2><p>{{ item.descricao }}</p>
+            <div class="tf-meta">
+              <span class="tf-pill" [class.high]="item.prioridade === alta">{{ prioridadeLabel(item.prioridade) }}</span>
+              <span>{{ item.status === concluida ? 'Concluída' : 'Pendente' }}</span>
+              <span *ngIf="item.prazo" [class.late]="item.status === status.Pendente && item.prazo < dia">
+                <i class="far fa-calendar" aria-hidden="true"></i> {{ item.prazo | date:'dd/MM/yyyy' }}
+                <ng-container *ngIf="item.status === status.Pendente && item.prazo < dia"> · Atrasada</ng-container>
+              </span>
             </div>
-            <div class="text-end col col-md-6">
-                <div class="text-lg-end pt-2">
-                    <button id="create" class="btn btn-primary" type="button" (click)="createTarefa()">
-                        <i class="fa fa-plus me-1"></i>
-                        <span>{{ "::NovaTarefa" | abpLocalization }}</span>
-                    </button>
-                </div>
+          </div>
+          <div ngbDropdown container="body">
+            <button class="btn tf-more" type="button" ngbDropdownToggle [attr.aria-label]="'Ações de ' + item.titulo"
+              [disabled]="busy.has(item.id)"><i class="fas fa-ellipsis-h" aria-hidden="true"></i></button>
+            <div ngbDropdownMenu>
+              <button ngbDropdownItem (click)="editarTarefa(item.id)">Editar</button>
+              <button ngbDropdownItem (click)="deletar(item.id)">Excluir</button>
             </div>
+          </div>
+        </li>
+      </ul>
+      <footer *ngIf="tarefa.totalCount > 0" class="tf-pagination">
+        <span>{{ tarefa.totalCount }} {{ tarefa.totalCount === 1 ? 'tarefa' : 'tarefas' }}</span>
+        <div *ngIf="tarefa.totalCount > list.maxResultCount">
+          <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="list.page === 0"
+            (click)="list.page = list.page - 1">Anterior</button>
+          <span>Página {{ list.page + 1 }}</span>
+          <button type="button" class="btn btn-sm btn-outline-secondary"
+            [disabled]="(list.page + 1) * list.maxResultCount >= tarefa.totalCount"
+            (click)="list.page = list.page + 1">Próxima</button>
         </div>
-    </div>
-    <div class="card-body">
-        <ngx-datatable [rows]="tarefa.items" [count]="tarefa.totalCount" [list]="list" default>
-            <ngx-datatable-column [name]="'::Titulo' | abpLocalization" prop="titulo"></ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Descricao' | abpLocalization" prop="descricao"></ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status">
-                <ng-template let-row="row" ngx-datatable-cell-template>
-                    {{ '::Enum:TarefasStatus.' + row.status | abpLocalization }}
-                </ng-template>
-            </ngx-datatable-column>
-            <ngx-datatable-column [name]="'::DataCriacao' | abpLocalization" prop="dataCriacao">
-                <ng-template let-row="row" ngx-datatable-cell-template>
-                    {{ row.dataCriacao | date }}
-                </ng-template>
-            </ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Acoes' | abpLocalization" [maxWidth]="150" [sortable]="false">
-                <ng-template let-row="row" ngx-datatable-cell-template>
-                    <div ngbDropdown container="body" class="d-inline-block">
-                        <button class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown"
-                            aria-haspopup="true" ngbDropdownToggle>
-                            <i class="fa fa-cog me-1"></i>{{ '::Acoes' | abpLocalization }}
-                        </button>
-                        <div ngbDropdownMenu>
-                            <button ngbDropdownItem (click)="editarTarefa(row.id)">
-                                {{ '::Editar' | abpLocalization }}
-                            </button>
-                            <button ngbDropdownItem (click)="deletar(row.id)">
-                                {{ '::Deletar' | abpLocalization }}
-                            </button>
-                        </div>
-                    </div>
-                </ng-template>
-            </ngx-datatable-column>
-        </ngx-datatable>
-    </div>
-</div>
+      </footer>
+    </ng-container>
+  </section>
+</app-workspace>
 
-<abp-modal [(visible)]="isModalOpen">
-    <ng-template #abpHeader>
-        <h3>{{(selecionarTarefa.id ? '::Editar' : '::NovaTarefa') | abpLocalization }}</h3>
-    </ng-template>
-
-    <ng-template #abpBody>
-        <form [formGroup]="form" (ngSubmit)="salvar()">
-            <div class="mt-2">
-                <label for="tarefa-titulo">Título</label><span> * </span>
-                <input type="text" id="tarefa-titulo" class="form-control" formControlName="titulo" maxlength="200" autofocus />
-            </div>
-
-            <div class="mt-2">
-                <label for="tarefa-descricao">Descrição</label><span> * </span>
-                <textarea id="tarefa-descricao" class="form-control" formControlName="descricao" maxlength="4000" rows="3"></textarea>
-            </div>
-
-            <div class="mt-2">
-                <label for="tarefa-status">Status</label><span> * </span>
-                <select class="form-control" id="tarefa-status" formControlName="status">
-                    <option [ngValue]="null">Selecione o status da tarefa</option>
-                    <option [ngValue]="0">Pendente</option>
-                    <option [ngValue]="1">Concluída</option>
-                </select>
-            </div>
-
-        </form>
-    </ng-template>
-
-    <ng-template #abpFooter>
-        <button type="button" class="btn btn-secondary" abpClose [disabled]="isSaving">
-            {{ '::Fechar' | abpLocalization }}
-        </button>
-
-        <!--added save button-->
-        <button class="btn btn-primary" (click)="salvar()" [disabled]="form.invalid || isSaving" [attr.aria-busy]="isSaving">
-            <i class="fa fa-check mr-1"></i>
-            {{ '::Salvar' | abpLocalization }}
-        </button>
-    </ng-template>
+<abp-modal [(visible)]="isModalOpen" [busy]="isSaving">
+  <ng-template #abpHeader><h2>{{ selecionarTarefa.id ? 'Editar tarefa' : 'Nova tarefa' }}</h2></ng-template>
+  <ng-template #abpBody>
+    <form *ngIf="form" id="form-tarefa" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      <p *ngIf="erroFormulario" class="alert alert-danger" role="alert">{{ erroFormulario }}</p>
+      <label for="tarefa-titulo">Título</label>
+      <input id="tarefa-titulo" class="form-control mb-2" formControlName="titulo" maxlength="200" required>
+      <small class="text-danger" *ngIf="form.get('titulo').touched && form.get('titulo').invalid">Informe um título válido.</small>
+      <label for="tarefa-descricao">Descrição</label>
+      <textarea id="tarefa-descricao" class="form-control mb-2" formControlName="descricao" maxlength="4000" rows="4" required></textarea>
+      <small class="text-danger" *ngIf="form.get('descricao').touched && form.get('descricao').invalid">Informe uma descrição válida.</small>
+      <div class="tf-form-grid">
+        <div>
+          <label for="tarefa-status">Status</label>
+          <select id="tarefa-status" class="form-select" formControlName="status">
+            <option [ngValue]="status.Pendente">Pendente</option>
+            <option [ngValue]="concluida">Concluída</option>
+          </select>
+        </div>
+        <div>
+          <label for="tarefa-prioridade">Prioridade</label>
+          <select id="tarefa-prioridade" class="form-select" formControlName="prioridade">
+            <option *ngFor="let item of opcoesPrioridade" [ngValue]="item.value">{{ item.label }}</option>
+          </select>
+        </div>
+      </div>
+      <label class="mt-2" for="tarefa-prazo">Prazo (opcional)</label>
+      <input id="tarefa-prazo" type="date" class="form-control" formControlName="prazo">
+    </form>
+  </ng-template>
+  <ng-template #abpFooter>
+    <button class="btn btn-outline-secondary" type="button" abpClose [disabled]="isSaving">Cancelar</button>
+    <button class="btn tf-primary" type="submit" form="form-tarefa" [disabled]="isSaving">Salvar</button>
+  </ng-template>
 </abp-modal>

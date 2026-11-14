@@ -4,7 +4,8 @@ import { CommonModule } from '@angular/common';
 import { TarefaRoutingModule } from './tarefa-routing.module';
 import { TarefaComponent } from './tarefa.component';
 import { SharedModule } from '../shared/shared.module';
-import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { WorkspaceComponent } from '../shared/workspace.component';
 
 
 
@@ -16,7 +17,9 @@ import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
     CommonModule,
     TarefaRoutingModule,
     SharedModule,
-    NgbDatepickerModule
+    FormsModule,
+    ReactiveFormsModule,
+    WorkspaceComponent
   ]
 })
 export class TarefaModule { }

@@ -1,1 +1,10 @@
-/* Styles for the home component */
+.tf-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 1rem; }
+.tf-summary a {
+  display: grid; justify-items: start; gap: .65rem; background: #fff;
+  border: 1px solid #dbe5e7; border-radius: .85rem; padding: 1.1rem;
+  color: #173239; text-decoration: none;
+}
+.tf-summary a:hover { border-color: #358b6d; }
+.tf-summary i { color: #1f7055; background: #e4f2ea; padding: .55rem; border-radius: .5rem; }
+.tf-summary strong { font-size: 2rem; line-height: 1; }
+.tf-welcome h2 { font-size: 1.45rem; }

@@ -111,6 +111,7 @@ public class TaskFlowHttpApiHostModule : AbpModule
         ConfigureBundles();
         ConfigureConventionalControllers();
         ConfigureSwagger(context, configuration);
+        context.Services.AddTaskFlowHealthChecks();
         ConfigureVirtualFileSystem(context);
         ConfigureCors(context, configuration);
     }

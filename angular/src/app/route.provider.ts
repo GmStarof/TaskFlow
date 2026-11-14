@@ -16,16 +16,9 @@ function configureRoutes(routes: RoutesService) {
         layout: eLayoutType.application,
       },
       {
-        path: '/tarefa',
-        name: '::Menu:Tarefa',
-        iconClass: 'fas fa-book',
-        order: 2,
-        layout: eLayoutType.application,
-      },
-      {
         path: '/MinhasTarefas',
         name: '::Menu:MinhasTarefas',
-        parentName: '::Menu:Tarefa',
+        invisible: true,
         layout: eLayoutType.application,
       },
     ]);

@@ -1,0 +1,36 @@
+.tf-controls, .tf-form-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; }
+label { display: block; font-weight: 650; margin-bottom: .3rem; }
+.tf-filters { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1rem 0; }
+.tf-filters button {
+  border: 1px solid #dbe5e7; background: #fff; color: #435d65;
+  padding: .45rem .75rem; border-radius: .55rem; font-weight: 600;
+}
+.tf-filters button.active { background: #e2f3eb; color: #14543f; border-color: #abdbc8; }
+.tf-message:not(:empty) { color: #175e48; margin: .75rem 0; font-weight: 600; }
+.tf-empty { text-align: center; padding: 2.8rem 1rem; color: #51696e; }
+.tf-empty i { font-size: 2.25rem; color: #24765e; }
+.tf-empty h2 { margin: .7rem 0 1rem; font-size: 1.2rem; }
+.tf-tasks { list-style: none; margin: 0; padding: 0; }
+.tf-tasks li {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: .9rem; align-items: start; border-top: 1px solid #e1e9eb; padding: 1rem 0;
+}
+.tf-task-content { min-width: 0; overflow-wrap: anywhere; }
+.tf-task-content h2 { font-size: 1rem; margin: 0 0 .25rem; }
+.tf-task-content p { color: #51696e; margin: 0 0 .5rem; white-space: pre-wrap; }
+.tf-check {
+  border: 1px solid #7c9e97; background: #fff; color: #286958; border-radius: 50%; width: 2.1rem; height: 2.1rem;
+}
+.tf-check:not(.done):not(:hover) i { visibility: hidden; }
+.tf-check.done { background: #226b55; color: #fff; border-color: #226b55; }
+.tf-meta { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; font-size: .85rem; color: #536870; }
+.tf-pill { background: #eaf0f0; border-radius: 99px; padding: .18rem .6rem; }
+.high { background: #ffefd4; color: #734c0f; }
+.late { color: #9e3329; font-weight: 650; }
+.tf-more::after { display: none; }
+.tf-pagination { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .6rem; border-top: 1px solid #e1e9eb; padding-top: .8rem; }
+.tf-pagination div { display: flex; align-items: center; gap: .5rem; }
+@media (max-width: 540px) {
+  .tf-controls, .tf-form-grid { grid-template-columns: 1fr; gap: .65rem; }
+  .tf-tasks li { gap: .55rem; }
+}

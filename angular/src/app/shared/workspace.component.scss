@@ -1,0 +1,41 @@
+.tf-workspace {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  background: #f4f7f8;
+  border-radius: 18px;
+  min-height: 70vh;
+  overflow: hidden;
+  color: #162a33;
+}
+.tf-sidebar {
+  background: #152a32;
+  color: #e4eff0;
+  padding: 1.5rem 1rem;
+}
+.tf-brand, nav a {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  text-decoration: none;
+  color: inherit;
+}
+.tf-brand { font-size: 1.2rem; font-weight: 750; margin: 0 .5rem 2rem; }
+.tf-brand-icon {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: .65rem;
+  background: #bcecd1;
+  color: #153932;
+}
+nav { display: grid; gap: .35rem; }
+nav a { padding: .7rem .8rem; border-radius: .55rem; font-weight: 600; }
+nav a:hover, nav a.active { background: #27464e; color: #e3fff0; }
+.tf-main { min-width: 0; padding: clamp(1rem, 3vw, 2.6rem); }
+@media (max-width: 767px) {
+  .tf-workspace { grid-template-columns: 1fr; }
+  .tf-sidebar { padding: .85rem; }
+  .tf-brand { margin: 0 .5rem .6rem; }
+  nav { display: flex; flex-wrap: wrap; }
+}
